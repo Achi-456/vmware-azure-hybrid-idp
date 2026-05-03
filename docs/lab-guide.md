@@ -187,6 +187,74 @@ curl -u "$GITEA_ADMIN_USERNAME:$GITEA_ADMIN_PASSWORD" \
   http://gitea.dclab.local/api/v1/repos/gitadmin/platform
 ```
 
+## Phase 3C GitOps Control Plane: Argo CD
+
+Argo CD is deployed on RKE2 as the GitOps engine for platform services.
+
+Endpoint:
+
+- URL: `http://argocd.dclab.local`
+- Ingress VIP: `172.25.188.96`
+- Namespace: `argocd`
+
+Versions:
+
+- Helm chart: `argo/argo-cd` version `6.8.1`
+- Argo CD application image: `v2.11.3`
+
+Images:
+
+- `harbor-01.dclab.local/argocd/argocd:v2.11.3`
+- `harbor-01.dclab.local/argocd/redis:7.0.15-alpine`
+
+Runtime choices:
+
+- Dex is disabled for this phase.
+- Argo CD server runs with `server.insecure=true`.
+- Ingress uses HTTP through the existing RKE2 NGINX controller.
+- TLS and SSO are deferred to the Vault/cert-manager and identity phases.
+
+Credentials:
+
+- Admin username: `admin`
+- Admin password is stored only on `utility-01` in `/root/gitea-secrets.env`.
+- The initial Argo CD admin secret was deleted after password rotation.
+
+Gitea repo connection:
+
+- Repo URL: `http://gitea.dclab.local/gitadmin/platform.git`
+- Status: `Successful`
+
+App-of-Apps:
+
+- Root app: `apps/root-app.yaml`
+- Root path watched by Argo CD: `apps/platform-apps`
+- First child app: `gitops-smoke`
+- Smoke workload path: `apps/workloads/gitops-smoke`
+
+Current Argo CD apps:
+
+```text
+root-app      Synced Healthy
+gitops-smoke  Synced Healthy
+```
+
+Validation:
+
+```bash
+kubectl -n argocd get pods,svc,ingress
+curl http://argocd.dclab.local
+argocd --grpc-web repo list
+argocd --grpc-web app list
+kubectl -n gitops-smoke get deploy,pod,svc
+```
+
+Notes:
+
+- `gitops-smoke` uses `harbor-01.dclab.local/platform/nginx:tls-test`.
+- The first GitOps sync test added label `platform.dclab.local/gitops-test=phase-3c` from Git and Argo CD applied it automatically.
+- Longhorn and Gitea are not yet retroactively managed by Argo CD; that adoption is deferred until their exact manifests or Helm values are committed.
+
 ## Crossplane Phase 2D Status
 
 Crossplane control plane:

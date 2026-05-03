@@ -1,8 +1,8 @@
 # VMware Azure Hybrid Internal Developer Platform
 
-Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Crossplane, and Azure provider foundations.
+Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Gitea, Argo CD, Crossplane, and Azure provider foundations.
 
-**GitHub description:** Hybrid internal developer platform lab on VMware vSphere with RKE2, Harbor, Longhorn, MetalLB ingress, Crossplane, and Azure provider integration.
+**GitHub description:** Hybrid internal developer platform lab on VMware vSphere with RKE2, Harbor, Longhorn, MetalLB ingress, Gitea, Argo CD GitOps, Crossplane, and Azure provider integration.
 
 ## Core Idea
 
@@ -33,11 +33,15 @@ flowchart TB
     Ingress[RKE2 NGINX Ingress<br/>IngressClass: nginx]
     MetalLB[MetalLB L2<br/>VIP: 172.25.188.96]
     Longhorn[Longhorn<br/>Default StorageClass]
+    Gitea[Gitea<br/>Internal Git]
+    ArgoCD[Argo CD<br/>GitOps Control Plane]
     Crossplane[Crossplane<br/>Azure Providers Installed]
     Demo[Demo Workloads]
   end
 
   Harbor -->|HTTPS image pulls| K8s
+  Gitea -->|platform repo| ArgoCD
+  ArgoCD -->|syncs from Git| Demo
   Longhorn -->|Persistent Volumes| Demo
   MetalLB --> Ingress
   DNS[DNS records<br/>gitea / argocd / grafana / backstage] -->|172.25.188.96| MetalLB
@@ -55,6 +59,8 @@ flowchart TB
 | Longhorn | Persistent storage | Default `StorageClass` |
 | MetalLB | LoadBalancer implementation | L2 mode, VIP `172.25.188.96` |
 | RKE2 NGINX Ingress | HTTP/HTTPS routing | Existing bundled controller exposed via MetalLB |
+| Gitea | Internal Git server | `gitadmin/platform` platform monorepo |
+| Argo CD | GitOps controller | App-of-Apps with `root-app` and `gitops-smoke` |
 | Crossplane | Cloud control plane | Core + Azure providers healthy; Azure auth paused |
 | utility-01 | Admin workstation | `kubectl`, `helm`, Azure CLI, SSH access |
 
@@ -71,6 +77,10 @@ Completed:
 - Crossplane core and Azure providers installed
 - MetalLB L2 ingress VIP on `172.25.188.96`
 - Existing RKE2 NGINX ingress exposed as `LoadBalancer`
+- Gitea deployed on `gitea.dclab.local`
+- Argo CD deployed on `argocd.dclab.local`
+- App-of-Apps bootstrap from the internal Gitea platform repo
+- GitOps smoke workload synced and updated from Git
 - Runbooks for build commands and troubleshooting
 
 Paused:
@@ -79,9 +89,7 @@ Paused:
 
 Next:
 
-- Gitea on `gitea.dclab.local`
-- Argo CD on `argocd.dclab.local`
-- GitOps management for platform components
+- Bring existing platform services under GitOps one at a time
 - Gitea Actions runner for on-prem CI
 - Backstage developer portal
 
@@ -91,8 +99,8 @@ Next:
 | --- | --- | --- |
 | Harbor | `https://harbor-01.dclab.local` | Requires workstation DNS or hosts entry |
 | Longhorn | `http://localhost:30080` | Use SSH tunnel from workstation |
-| Future Gitea | `http://gitea.dclab.local` | DNS already points to ingress VIP |
-| Future Argo CD | `http://argocd.dclab.local` | DNS already points to ingress VIP |
+| Gitea | `http://gitea.dclab.local` | Internal Git server |
+| Argo CD | `http://argocd.dclab.local` | GitOps control plane |
 | Future Grafana | `http://grafana.dclab.local` | DNS already points to ingress VIP |
 | Future Backstage | `http://backstage.dclab.local` | DNS already points to ingress VIP |
 
@@ -110,6 +118,8 @@ kubectl -n metallb-system get pods
 kubectl -n kube-system get svc rke2-ingress-nginx-controller-lb
 kubectl -n longhorn-system get pods
 kubectl get storageclass
+kubectl -n gitea get pods,pvc,ingress
+kubectl -n argocd get applications
 kubectl get providers
 ```
 
@@ -120,6 +130,8 @@ Expected state:
 - Ingress service `EXTERNAL-IP=172.25.188.96`
 - Longhorn pods `Running`
 - `longhorn` is default storage class
+- Gitea pods `Running`
+- Argo CD apps `Synced` and `Healthy`
 - Crossplane Azure providers `HEALTHY=True`
 
 ## Repository Structure
