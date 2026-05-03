@@ -138,6 +138,55 @@ Notes:
 - The VIP may not respond to ICMP ping because Kubernetes `LoadBalancer` services forward TCP/UDP service ports, not arbitrary ICMP.
 - The bundled RKE2 ingress controller may not populate `ADDRESS` on each Ingress object unless publish-service behavior is configured. HTTP routing through the VIP is the authoritative validation.
 
+## Phase 3B Internal Git: Gitea
+
+Gitea is deployed on RKE2 as the internal Git server for ArgoCD, Backstage, and future CI workflows.
+
+Endpoint:
+
+- URL: `http://gitea.dclab.local`
+- Ingress VIP: `172.25.188.96`
+- Namespace: `gitea`
+
+Images:
+
+- `harbor-01.dclab.local/gitea/gitea:1.22.1`
+- `harbor-01.dclab.local/gitea/postgres:16.3`
+
+Storage:
+
+- `gitea-data`: `20Gi`, Longhorn
+- `gitea-postgres-data`: `5Gi`, Longhorn
+
+Runtime choices:
+
+- Gitea uses PostgreSQL, not SQLite.
+- Gitea Deployment strategy is `Recreate` because the pod mounts a single Longhorn `ReadWriteOnce` volume.
+- Git over HTTP is enabled through Ingress.
+- Git over SSH is deferred until a later TCP routing design.
+
+Credentials:
+
+- Admin username: `gitadmin`
+- Admin and database passwords are stored only on `utility-01` in `/root/gitea-secrets.env`.
+- Do not commit these values to Git.
+
+Platform monorepo:
+
+- URL: `http://gitea.dclab.local/gitadmin/platform`
+- Git URL for ArgoCD: `http://gitea.dclab.local/gitadmin/platform.git`
+- Purpose: source of truth for ArgoCD apps, Helm charts, Crossplane compositions, and platform docs.
+
+Validation:
+
+```bash
+kubectl -n gitea get pods,pvc,svc,ingress
+curl http://gitea.dclab.local/api/healthz
+source /root/gitea-secrets.env
+curl -u "$GITEA_ADMIN_USERNAME:$GITEA_ADMIN_PASSWORD" \
+  http://gitea.dclab.local/api/v1/repos/gitadmin/platform
+```
+
 ## Crossplane Phase 2D Status
 
 Crossplane control plane:

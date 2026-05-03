@@ -13,4 +13,5 @@ Secrets are intentionally excluded. When a command needs a credential, read it f
 - `04-longhorn-storage.md` - Longhorn install, Harbor image path, and PVC validation.
 - `05-crossplane-azure-paused.md` - Crossplane install, provider version fix, and Azure credential blocker.
 - `06-metallb-ingress.md` - MetalLB L2 VIP and RKE2 ingress LoadBalancer exposure.
+- `07-gitea.md` - Gitea deployment on RKE2 with Longhorn, Harbor images, and ingress routing.
 - `99-troubleshooting.md` - Issues encountered and exact recovery steps.
