@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: http://gitea.dclab.local/gitadmin/platform.git
+    repoURL: https://gitea.dclab.local/gitadmin/platform.git
     targetRevision: main
     path: apps/workloads/gitops-smoke
   destination:

@@ -1,6 +1,6 @@
 # VMware Azure Hybrid Internal Developer Platform
 
-Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Gitea, Argo CD, Gitea Actions, Crossplane, and Azure provider foundations.
+Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Gitea, Argo CD, Gitea Actions, cert-manager, Crossplane, and Azure provider foundations.
 
 **GitHub description:** Hybrid internal developer platform lab on VMware vSphere with RKE2, Harbor, Longhorn, MetalLB ingress, Gitea, Argo CD GitOps, Gitea Actions CI, Crossplane, and Azure provider integration.
 
@@ -63,9 +63,10 @@ flowchart TB
 | Longhorn | Persistent storage | Default `StorageClass` |
 | MetalLB | LoadBalancer implementation | L2 mode, VIP `172.25.188.96` |
 | RKE2 NGINX Ingress | HTTP/HTTPS routing | Existing bundled controller exposed via MetalLB |
-| Gitea | Internal Git server | `gitadmin/platform` platform monorepo |
-| Argo CD | GitOps controller | App-of-Apps with `root-app` and `gitops-smoke` |
+| Gitea | Internal Git server | HTTPS UI, `gitadmin/platform` platform monorepo |
+| Argo CD | GitOps controller | HTTPS UI, App-of-Apps with `root-app` and `gitops-smoke` |
 | Gitea Actions | On-prem CI runner | Builds sample app, pushes to Harbor, commits tag to Git |
+| cert-manager | Internal TLS automation | Lab CA issuing Gitea, Argo CD, and Longhorn certs |
 | Crossplane | Cloud control plane | Core + Azure providers healthy; Azure auth paused |
 | utility-01 | Admin workstation | `kubectl`, `helm`, Azure CLI, SSH access |
 
@@ -90,6 +91,8 @@ Completed:
 - CI smoke workflow passing
 - Sample app build workflow pushing to Harbor and updating Git
 - Argo CD syncing `sample-app` from the CI-updated manifest
+- cert-manager installed through Argo CD
+- Internal lab CA issuing TLS for Gitea, Argo CD, and Longhorn
 - Runbooks for build commands and troubleshooting
 
 Paused:
@@ -107,9 +110,9 @@ Next:
 | UI / Endpoint | URL | Notes |
 | --- | --- | --- |
 | Harbor | `https://harbor-01.dclab.local` | Requires workstation DNS or hosts entry |
-| Longhorn | `http://localhost:30080` | Use SSH tunnel from workstation |
-| Gitea | `http://gitea.dclab.local` | Internal Git server |
-| Argo CD | `http://argocd.dclab.local` | GitOps control plane |
+| Longhorn | `https://longhorn.dclab.local` | NodePort tunnel remains fallback |
+| Gitea | `https://gitea.dclab.local` | Internal Git server |
+| Argo CD | `https://argocd.dclab.local` | GitOps control plane |
 | Sample App | Cluster service `sample-app.sample-app.svc` | Built by Gitea Actions and synced by Argo CD |
 | Future Grafana | `http://grafana.dclab.local` | DNS already points to ingress VIP |
 | Future Backstage | `http://backstage.dclab.local` | DNS already points to ingress VIP |
@@ -132,6 +135,11 @@ kubectl -n gitea get pods,pvc,ingress
 kubectl -n argocd get applications
 kubectl -n gitea-runner get pods
 kubectl -n sample-app get pods
+kubectl -n cert-manager get pods
+kubectl get clusterissuer
+kubectl -n gitea get certificate
+kubectl -n argocd get certificate
+kubectl -n longhorn-system get certificate
 kubectl get providers
 ```
 
@@ -146,6 +154,9 @@ Expected state:
 - Argo CD apps `Synced` and `Healthy`
 - Gitea runner pod `Running`
 - Sample app pod `Running`
+- cert-manager pods `Running`
+- `dclab-ca` issuer `Ready`
+- `gitea-tls`, `argocd-tls`, and `longhorn-tls` certificates `Ready`
 - Crossplane Azure providers `HEALTHY=True`
 
 ## Repository Structure
@@ -178,5 +189,6 @@ This lab demonstrates practical platform engineering skills that map to enterpri
 - Private registry workflows with scanning and trusted TLS
 - Persistent storage for stateful platform services
 - LoadBalancer and ingress design on a non-cloud Kubernetes cluster
+- Internal TLS automation with cert-manager and a lab CA
 - GitOps-ready foundations for repeatable platform delivery
 - Crossplane-ready control plane for future hybrid cloud provisioning

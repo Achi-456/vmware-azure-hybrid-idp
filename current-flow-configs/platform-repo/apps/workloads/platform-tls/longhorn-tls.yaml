@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: longhorn-frontend
+  namespace: longhorn-system
+  annotations:
+    cert-manager.io/cluster-issuer: dclab-ca
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - longhorn.dclab.local
+      secretName: longhorn-tls
+  rules:
+    - host: longhorn.dclab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: longhorn-frontend
+                port:
+                  number: 80

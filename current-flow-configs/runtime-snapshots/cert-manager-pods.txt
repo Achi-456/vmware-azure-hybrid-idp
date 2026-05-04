@@ -1,0 +1,4 @@
+NAME                                      READY   STATUS    RESTARTS   AGE
+cert-manager-c6cfdb46b-b5qcz              1/1     Running   0          22m
+cert-manager-cainjector-ddc6bffb7-9wlgh   1/1     Running   0          22m
+cert-manager-webhook-6b8d79cfd8-vtqm6     1/1     Running   0          22m

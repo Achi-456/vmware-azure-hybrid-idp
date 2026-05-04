@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea
+  namespace: gitea
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      initContainers:
+        - name: init-config
+          image: harbor-01.dclab.local/gitea/gitea:1.22.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - mkdir -p /data/gitea/conf /data/git/repositories /data/gitea/uploads
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: gitea
+          image: harbor-01.dclab.local/gitea/gitea:1.22.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: GITEA__database__DB_TYPE
+              value: postgres
+            - name: GITEA__database__HOST
+              value: gitea-postgres:5432
+            - name: GITEA__database__NAME
+              value: gitea
+            - name: GITEA__database__USER
+              value: gitea
+            - name: GITEA__database__PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: gitea-postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: GITEA__database__SSL_MODE
+              value: disable
+            - name: GITEA__server__DOMAIN
+              value: gitea.dclab.local
+            - name: GITEA__server__ROOT_URL
+              value: http://gitea.dclab.local/
+            - name: GITEA__server__HTTP_PORT
+              value: "3000"
+            - name: GITEA__server__DISABLE_SSH
+              value: "true"
+            - name: GITEA__security__INSTALL_LOCK
+              value: "true"
+            - name: GITEA__service__DISABLE_REGISTRATION
+              value: "false"
+            - name: GITEA__log__LEVEL
+              value: Info
+            - name: GITEA__actions__ENABLED
+              value: "true"
+            - name: GITEA__actions__DEFAULT_ACTIONS_URL
+              value: self
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gitea-data
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gitea
+  namespace: gitea
+  annotations:
+    cert-manager.io/cluster-issuer: dclab-ca
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - gitea.dclab.local
+      secretName: gitea-tls
+  rules:
+    - host: gitea.dclab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gitea
+                port:
+                  number: 80

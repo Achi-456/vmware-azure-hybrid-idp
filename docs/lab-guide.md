@@ -22,6 +22,7 @@ This lab models a hybrid internal developer platform:
 | `edge-01.dclab.local` | `172.25.188.95` | Reserved edge VM |
 | `gitea.dclab.local` | `172.25.188.96` | Platform ingress VIP |
 | `argocd.dclab.local` | `172.25.188.96` | Platform ingress VIP |
+| `longhorn.dclab.local` | `172.25.188.96` | Platform ingress VIP |
 | `grafana.dclab.local` | `172.25.188.96` | Platform ingress VIP |
 | `backstage.dclab.local` | `172.25.188.96` | Platform ingress VIP |
 
@@ -144,7 +145,8 @@ Gitea is deployed on RKE2 as the internal Git server for ArgoCD, Backstage, and 
 
 Endpoint:
 
-- URL: `http://gitea.dclab.local`
+- Browser URL: `https://gitea.dclab.local`
+- Internal service/root URL: `http://gitea.dclab.local`
 - Ingress VIP: `172.25.188.96`
 - Namespace: `gitea`
 
@@ -173,18 +175,18 @@ Credentials:
 
 Platform monorepo:
 
-- URL: `http://gitea.dclab.local/gitadmin/platform`
-- Git URL for ArgoCD: `http://gitea.dclab.local/gitadmin/platform.git`
+- Browser URL: `https://gitea.dclab.local/gitadmin/platform`
+- Git URL for Argo CD: `https://gitea.dclab.local/gitadmin/platform.git`
 - Purpose: source of truth for ArgoCD apps, Helm charts, Crossplane compositions, and platform docs.
 
 Validation:
 
 ```bash
 kubectl -n gitea get pods,pvc,svc,ingress
-curl http://gitea.dclab.local/api/healthz
+curl -k https://gitea.dclab.local/api/healthz
 source /root/gitea-secrets.env
 curl -u "$GITEA_ADMIN_USERNAME:$GITEA_ADMIN_PASSWORD" \
-  http://gitea.dclab.local/api/v1/repos/gitadmin/platform
+  -k https://gitea.dclab.local/api/v1/repos/gitadmin/platform
 ```
 
 ## Phase 3C GitOps Control Plane: Argo CD
@@ -193,7 +195,7 @@ Argo CD is deployed on RKE2 as the GitOps engine for platform services.
 
 Endpoint:
 
-- URL: `http://argocd.dclab.local`
+- URL: `https://argocd.dclab.local`
 - Ingress VIP: `172.25.188.96`
 - Namespace: `argocd`
 
@@ -211,8 +213,8 @@ Runtime choices:
 
 - Dex is disabled for this phase.
 - Argo CD server runs with `server.insecure=true`.
-- Ingress uses HTTP through the existing RKE2 NGINX controller.
-- TLS and SSO are deferred to the Vault/cert-manager and identity phases.
+- Ingress terminates TLS through the existing RKE2 NGINX controller.
+- SSO is deferred to the identity phase.
 
 Credentials:
 
@@ -222,7 +224,7 @@ Credentials:
 
 Gitea repo connection:
 
-- Repo URL: `http://gitea.dclab.local/gitadmin/platform.git`
+- Repo URL: `https://gitea.dclab.local/gitadmin/platform.git`
 - Status: `Successful`
 
 App-of-Apps:
@@ -245,7 +247,7 @@ Validation:
 
 ```bash
 kubectl -n argocd get pods,svc,ingress
-curl http://argocd.dclab.local
+curl -k https://argocd.dclab.local
 argocd --grpc-web repo list
 argocd --grpc-web app list
 kubectl -n gitops-smoke get deploy,pod,svc
@@ -330,6 +332,65 @@ kubectl -n sample-app get pods,svc
 kubectl -n sample-app get deploy sample-app \
   -o jsonpath='{.spec.template.spec.containers[0].image}'
 ```
+
+## Phase 4A Internal TLS: cert-manager
+
+cert-manager is installed through Argo CD and issues certificates from a lab self-signed root CA.
+
+Endpoint changes:
+
+- Gitea browser URL: `https://gitea.dclab.local`
+- Argo CD browser URL: `https://argocd.dclab.local`
+- Longhorn browser URL: `https://longhorn.dclab.local`
+- Harbor remains: `https://harbor-01.dclab.local`
+
+Versions:
+
+- cert-manager chart: `v1.20.2`
+- cert-manager images: `v1.20.2`
+
+Images:
+
+- `harbor-01.dclab.local/cert-manager/cert-manager-controller:v1.20.2`
+- `harbor-01.dclab.local/cert-manager/cert-manager-webhook:v1.20.2`
+- `harbor-01.dclab.local/cert-manager/cert-manager-cainjector:v1.20.2`
+- `harbor-01.dclab.local/cert-manager/cert-manager-startupapicheck:v1.20.2`
+
+Issuer model:
+
+- Bootstrap issuer: `ClusterIssuer/dclab-selfsigned-bootstrap`
+- Root CA certificate: `Certificate/cert-manager/dclab-root-ca`
+- Platform issuer: `ClusterIssuer/dclab-ca`
+
+GitOps apps:
+
+```text
+cert-manager
+cert-manager-issuers
+platform-tls
+```
+
+Argo CD now uses the HTTPS Gitea repo URL:
+
+```text
+https://gitea.dclab.local/gitadmin/platform.git
+```
+
+Certificate checks:
+
+```bash
+kubectl get clusterissuer
+kubectl -n cert-manager get certificate dclab-root-ca
+kubectl -n gitea get certificate gitea-tls
+kubectl -n argocd get certificate argocd-tls
+kubectl -n longhorn-system get certificate longhorn-tls
+```
+
+Harbor exception:
+
+- Harbor is still standalone on `harbor-01`.
+- Harbor TLS is not managed by cert-manager in Phase 4A.
+- Vault-backed PKI and possible Harbor CA unification are deferred to Phase 4B.
 
 ## Crossplane Phase 2D Status
 

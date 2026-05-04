@@ -16,4 +16,5 @@ Secrets are intentionally excluded. When a command needs a credential, read it f
 - `07-gitea.md` - Gitea deployment on RKE2 with Longhorn, Harbor images, and ingress routing.
 - `08-argocd.md` - Argo CD install, Gitea repo connection, and App-of-Apps bootstrap.
 - `09-gitea-actions-runner.md` - Gitea Actions runner, Harbor image builds, and the on-prem CI loop.
+- `10-cert-manager.md` - cert-manager install, lab CA issuer model, and HTTPS for platform UIs.
 - `99-troubleshooting.md` - Issues encountered and exact recovery steps.

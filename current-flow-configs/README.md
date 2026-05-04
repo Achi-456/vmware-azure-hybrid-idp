@@ -1,6 +1,6 @@
 # Current Flow Config Export
 
-This folder is a local copy of the files that drive the currently working Gitea Actions -> Harbor -> Argo CD -> RKE2 flow.
+This folder is a local copy of the files that drive the currently working Gitea Actions -> Harbor -> Argo CD -> RKE2 flow, plus the Phase 4A cert-manager TLS overlay.
 
 No secret values are intentionally included here.
 
@@ -14,6 +14,7 @@ Push to Gitea platform repo
   -> workflow commits image tag back to Git
   -> Argo CD syncs sample-app
   -> RKE2 runs the new pod
+  -> cert-manager issues internal TLS for platform UIs
 ```
 
 Current image pattern:
@@ -40,7 +41,7 @@ current-flow-configs/
 `platform-repo/` contains the active files copied from the internal Gitea repo:
 
 ```text
-http://gitea.dclab.local/gitadmin/platform.git
+https://gitea.dclab.local/gitadmin/platform.git
 ```
 
 Important files:
@@ -51,8 +52,13 @@ Important files:
 - `apps/platform-apps/gitea-runner.yaml`
 - `apps/platform-apps/gitops-smoke.yaml`
 - `apps/platform-apps/sample-app.yaml`
+- `apps/platform-apps/cert-manager.yaml`
+- `apps/platform-apps/cert-manager-issuers.yaml`
+- `apps/platform-apps/platform-tls.yaml`
 - `apps/workloads/gitea-runner/config.yaml`
 - `apps/workloads/gitea-runner/statefulset.yaml`
+- `apps/workloads/cert-manager-issuers/issuers.yaml`
+- `apps/workloads/platform-tls/`
 - `apps/workloads/sample-app/deployment.yaml`
 - `apps/workloads/sample-app/service.yaml`
 - `apps/sample-app/Dockerfile`
@@ -71,6 +77,10 @@ Important files:
 - `sample-app-service-live.yaml`
 - `gitops-smoke-live.yaml`
 - `rke2-nodes.txt`
+- `cert-manager-pods.txt`
+- `cert-manager-clusterissuers.txt`
+- `platform-tls-certificates.txt`
+- `phase4a-https-checks.txt`
 - `gitea-runner-pods.txt`
 - `sample-app-pods.txt`
 

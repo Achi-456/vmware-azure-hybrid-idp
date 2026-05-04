@@ -1,0 +1,4 @@
+https://gitea.dclab.local -> 200
+https://argocd.dclab.local -> 200
+https://longhorn.dclab.local -> 200
+https://harbor-01.dclab.local -> 200

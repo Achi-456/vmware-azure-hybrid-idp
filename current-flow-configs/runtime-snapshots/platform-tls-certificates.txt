@@ -1,0 +1,6 @@
+NAME        READY   SECRET      AGE
+gitea-tls   True    gitea-tls   13m
+NAME         READY   SECRET       AGE
+argocd-tls   True    argocd-tls   13m
+NAME           READY   SECRET         AGE
+longhorn-tls   True    longhorn-tls   13m
