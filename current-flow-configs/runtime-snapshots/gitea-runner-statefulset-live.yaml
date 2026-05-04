@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"gitea-runner"},"name":"gitea-runner","namespace":"gitea-runner"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"gitea-runner"}},"serviceName":"gitea-runner","template":{"metadata":{"labels":{"app":"gitea-runner"}},"spec":{"automountServiceAccountToken":false,"containers":[{"command":["sh","-c","set -e\nif [ ! -s /data/.runner ]; then\n  act_runner register \\\n    --config /config/config.yaml \\\n    --no-interactive \\\n    --instance http://gitea.dclab.local \\\n    --token \"$(cat /run/secrets/token)\" \\\n    --name \"rke2-runner-$(hostname)\" \\\n    --labels \"ubuntu-latest:docker://harbor-01.dclab.local/runner/ubuntu:act-latest,docker-cli:docker://harbor-01.dclab.local/runner/docker:26.1-cli\"\nfi\nact_runner daemon --config /config/config.yaml\n"],"env":[{"name":"DOCKER_HOST","value":"tcp://localhost:2375"},{"name":"DOCKER_TLS_CERTDIR","value":""}],"image":"harbor-01.dclab.local/runner/act_runner:0.2.11","name":"runner","resources":{"limits":{"cpu":"1","memory":"1Gi"},"requests":{"cpu":"200m","memory":"256Mi"}},"volumeMounts":[{"mountPath":"/config","name":"runner-config"},{"mountPath":"/data","name":"runner-data"},{"mountPath":"/run/secrets","name":"runner-secret","readOnly":true},{"mountPath":"/certs","name":"certs"},{"mountPath":"/etc/docker/certs.d","name":"docker-certs"}]},{"args":["--host=tcp://0.0.0.0:2375","--host=unix:///var/run/docker.sock"],"env":[{"name":"DOCKER_TLS_CERTDIR","value":""}],"image":"harbor-01.dclab.local/runner/docker:26.1-dind","name":"dind","resources":{"limits":{"cpu":"2","memory":"2Gi"},"requests":{"cpu":"200m","memory":"512Mi"}},"securityContext":{"privileged":true},"volumeMounts":[{"mountPath":"/var/lib/docker","name":"dind-storage"},{"mountPath":"/etc/docker/certs.d","name":"docker-certs"}]}],"initContainers":[{"command":["sh","-c","set -e\nmkdir -p /certs/harbor /docker-certs/harbor-01.dclab.local\ncp /harbor-ca/ca.crt /certs/harbor/ca.crt\ncp /harbor-ca/ca.crt /docker-certs/harbor-01.dclab.local/ca.crt\n"],"image":"harbor-01.dclab.local/runner/act_runner:0.2.11","name":"trust-harbor-ca","volumeMounts":[{"mountPath":"/harbor-ca","name":"harbor-ca"},{"mountPath":"/certs","name":"certs"},{"mountPath":"/docker-certs","name":"docker-certs"}]}],"terminationGracePeriodSeconds":30,"volumes":[{"configMap":{"name":"runner-config"},"name":"runner-config"},{"name":"runner-secret","secret":{"items":[{"key":"token","path":"token"}],"secretName":"runner-secret"}},{"configMap":{"name":"harbor-ca"},"name":"harbor-ca"},{"emptyDir":{},"name":"certs"},{"emptyDir":{},"name":"docker-certs"},{"emptyDir":{},"name":"dind-storage"}]}},"volumeClaimTemplates":[{"metadata":{"name":"runner-data"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"longhorn"}}]}}
+  creationTimestamp: "2026-05-03T19:47:40Z"
+  generation: 2
+  labels:
+    argocd.argoproj.io/instance: gitea-runner
+  name: gitea-runner
+  namespace: gitea-runner
+  resourceVersion: "359012"
+  uid: f51e45ff-dac4-494c-ae35-e260195d5a17
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gitea-runner
+  serviceName: gitea-runner
+  template:
+    metadata:
+      labels:
+        app: gitea-runner
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - command:
+        - sh
+        - -c
+        - |
+          set -e
+          if [ ! -s /data/.runner ]; then
+            act_runner register \
+              --config /config/config.yaml \
+              --no-interactive \
+              --instance http://gitea.dclab.local \
+              --token "$(cat /run/secrets/token)" \
+              --name "rke2-runner-$(hostname)" \
+              --labels "ubuntu-latest:docker://harbor-01.dclab.local/runner/ubuntu:act-latest,docker-cli:docker://harbor-01.dclab.local/runner/docker:26.1-cli"
+          fi
+          act_runner daemon --config /config/config.yaml
+        env:
+        - name: DOCKER_HOST
+          value: tcp://localhost:2375
+        - name: DOCKER_TLS_CERTDIR
+        image: harbor-01.dclab.local/runner/act_runner:0.2.11
+        imagePullPolicy: IfNotPresent
+        name: runner
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /config
+          name: runner-config
+        - mountPath: /data
+          name: runner-data
+        - mountPath: /run/secrets
+          name: runner-secret
+          readOnly: true
+        - mountPath: /certs
+          name: certs
+        - mountPath: /etc/docker/certs.d
+          name: docker-certs
+      - args:
+        - --host=tcp://0.0.0.0:2375
+        - --host=unix:///var/run/docker.sock
+        env:
+        - name: DOCKER_TLS_CERTDIR
+        image: harbor-01.dclab.local/runner/docker:26.1-dind
+        imagePullPolicy: IfNotPresent
+        name: dind
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/docker
+          name: dind-storage
+        - mountPath: /etc/docker/certs.d
+          name: docker-certs
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          set -e
+          mkdir -p /certs/harbor /docker-certs/harbor-01.dclab.local
+          cp /harbor-ca/ca.crt /certs/harbor/ca.crt
+          cp /harbor-ca/ca.crt /docker-certs/harbor-01.dclab.local/ca.crt
+        image: harbor-01.dclab.local/runner/act_runner:0.2.11
+        imagePullPolicy: IfNotPresent
+        name: trust-harbor-ca
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /harbor-ca
+          name: harbor-ca
+        - mountPath: /certs
+          name: certs
+        - mountPath: /docker-certs
+          name: docker-certs
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: runner-config
+        name: runner-config
+      - name: runner-secret
+        secret:
+          defaultMode: 420
+          items:
+          - key: token
+            path: token
+          secretName: runner-secret
+      - configMap:
+          defaultMode: 420
+          name: harbor-ca
+        name: harbor-ca
+      - emptyDir: {}
+        name: certs
+      - emptyDir: {}
+        name: docker-certs
+      - emptyDir: {}
+        name: dind-storage
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: runner-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: longhorn
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+status:
+  availableReplicas: 1
+  collisionCount: 0
+  currentReplicas: 1
+  currentRevision: gitea-runner-5c48cf88fb
+  observedGeneration: 2
+  readyReplicas: 1
+  replicas: 1
+  updateRevision: gitea-runner-5c48cf88fb
+  updatedReplicas: 1

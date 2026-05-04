@@ -1,0 +1,39 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 1
+      envs:
+        DOCKER_HOST: tcp://localhost:2375
+        DOCKER_TLS_CERTDIR: ""
+        HARBOR_REGISTRY: harbor-01.dclab.local
+        HARBOR_PROJECT: platform
+      fetch_timeout: 5m
+      fetch_interval: 2s
+    cache:
+      enabled: true
+      dir: /tmp/cache
+    container:
+      network: host
+      privileged: true
+      options: --add-host gitea.dclab.local:172.25.188.96 --add-host harbor-01.dclab.local:172.25.188.93
+      valid_volumes:
+        - /tmp/cache
+        - /certs
+    host:
+      workdir_parent: /tmp/runner
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"config.yaml":"log:\n  level: info\nrunner:\n  file: /data/.runner\n  capacity: 1\n  envs:\n    DOCKER_HOST: tcp://localhost:2375\n    DOCKER_TLS_CERTDIR: \"\"\n    HARBOR_REGISTRY: harbor-01.dclab.local\n    HARBOR_PROJECT: platform\n  fetch_timeout: 5m\n  fetch_interval: 2s\ncache:\n  enabled: true\n  dir: /tmp/cache\ncontainer:\n  network: host\n  privileged: true\n  options: --add-host gitea.dclab.local:172.25.188.96 --add-host harbor-01.dclab.local:172.25.188.93\n  valid_volumes:\n    - /tmp/cache\n    - /certs\nhost:\n  workdir_parent: /tmp/runner\n"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"gitea-runner"},"name":"runner-config","namespace":"gitea-runner"}}
+  creationTimestamp: "2026-05-03T19:47:40Z"
+  labels:
+    argocd.argoproj.io/instance: gitea-runner
+  name: runner-config
+  namespace: gitea-runner
+  resourceVersion: "353762"
+  uid: 99f7add3-527c-41d6-9ce7-1b066dfe9518

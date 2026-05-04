@@ -1,0 +1,5 @@
+NAME                 CLUSTER                         NAMESPACE     PROJECT  STATUS  HEALTH   SYNCPOLICY  CONDITIONS  REPO                                            PATH                         TARGET
+argocd/gitea-runner  https://kubernetes.default.svc  gitea-runner  default  Synced  Healthy  Auto-Prune  <none>      http://gitea.dclab.local/gitadmin/platform.git  apps/workloads/gitea-runner  main
+argocd/gitops-smoke  https://kubernetes.default.svc  gitops-smoke  default  Synced  Healthy  Auto-Prune  <none>      http://gitea.dclab.local/gitadmin/platform.git  apps/workloads/gitops-smoke  main
+argocd/root-app      https://kubernetes.default.svc  argocd        default  Synced  Healthy  Auto-Prune  <none>      http://gitea.dclab.local/gitadmin/platform.git  apps/platform-apps           main
+argocd/sample-app    https://kubernetes.default.svc  sample-app    default  Synced  Healthy  Auto-Prune  <none>      http://gitea.dclab.local/gitadmin/platform.git  apps/workloads/sample-app    main

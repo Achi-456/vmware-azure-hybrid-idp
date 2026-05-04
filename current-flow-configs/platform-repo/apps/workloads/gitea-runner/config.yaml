@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-config
+  namespace: gitea-runner
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 1
+      envs:
+        DOCKER_HOST: tcp://localhost:2375
+        DOCKER_TLS_CERTDIR: ""
+        HARBOR_REGISTRY: harbor-01.dclab.local
+        HARBOR_PROJECT: platform
+      fetch_timeout: 5m
+      fetch_interval: 2s
+    cache:
+      enabled: true
+      dir: /tmp/cache
+    container:
+      network: host
+      privileged: true
+      options: --add-host gitea.dclab.local:172.25.188.96 --add-host harbor-01.dclab.local:172.25.188.93
+      valid_volumes:
+        - /tmp/cache
+        - /certs
+    host:
+      workdir_parent: /tmp/runner

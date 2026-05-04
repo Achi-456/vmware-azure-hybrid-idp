@@ -1,0 +1,41 @@
+name: CI smoke
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_TLS_CERTDIR: ""
+    steps:
+      - name: Check runner tools
+        run: |
+          set -e
+          echo "Runner is online"
+          uname -a
+          git --version
+          docker version
+      - name: Check lab endpoints
+        run: |
+          set -e
+          curl -sS http://gitea.dclab.local/api/healthz
+          curl -k -sS https://harbor-01.dclab.local/api/v2.0/systeminfo >/dev/null
+      - name: Clone platform repo
+        run: |
+          set -e
+          AUTH=$(printf "%s:%s" "${{ secrets.PUSH_USERNAME }}" "${{ secrets.PUSH_PASSWORD }}" | base64 -w0)
+          rm -rf /tmp/platform
+          git -c http.extraHeader="Authorization: Basic ${AUTH}" clone http://gitea.dclab.local/gitadmin/platform.git /tmp/platform
+          test -f /tmp/platform/apps/root-app.yaml
+      - name: Validate manifest inventory
+        run: |
+          set -e
+          cd /tmp/platform
+          find apps -name '*.yaml' -print
+          test -f apps/root-app.yaml
+          test -f apps/platform-apps/gitops-smoke.yaml
+          test -f apps/platform-apps/gitea-runner.yaml

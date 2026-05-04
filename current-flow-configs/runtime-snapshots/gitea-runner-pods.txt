@@ -1,0 +1,2 @@
+NAME             READY   STATUS    RESTARTS     AGE   IP           NODE             NOMINATED NODE   READINESS GATES
+gitea-runner-0   2/2     Running   3 (9h ago)   9h    10.42.3.31   rke2-worker-02   <none>           <none>

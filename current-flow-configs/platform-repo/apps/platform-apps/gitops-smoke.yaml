@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-smoke
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: http://gitea.dclab.local/gitadmin/platform.git
+    targetRevision: main
+    path: apps/workloads/gitops-smoke
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-smoke
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

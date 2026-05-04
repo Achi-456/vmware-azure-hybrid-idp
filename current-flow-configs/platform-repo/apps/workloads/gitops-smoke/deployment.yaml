@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-smoke
+  labels:
+    app: gitops-smoke
+    platform.dclab.local/managed-by: argocd
+    platform.dclab.local/gitops-test: phase-3c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitops-smoke
+  template:
+    metadata:
+      labels:
+        app: gitops-smoke
+    spec:
+      containers:
+        - name: nginx
+          image: harbor-01.dclab.local/platform/nginx:tls-test
+          ports:
+            - containerPort: 80

@@ -1,0 +1,529 @@
+apiVersion: v1
+items:
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"finalizers":["resources-finalizer.argocd.argoproj.io"],"name":"root-app","namespace":"argocd"},"spec":{"destination":{"namespace":"argocd","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"apps/platform-apps","repoURL":"http://gitea.dclab.local/gitadmin/platform.git","targetRevision":"main"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true},"syncOptions":["CreateNamespace=true"]}}}
+    creationTimestamp: "2026-05-03T19:17:11Z"
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    generation: 224
+    name: root-app
+    namespace: argocd
+    resourceVersion: "540281"
+    uid: c7c5eaca-7577-44d0-bc20-06581e19272d
+  spec:
+    destination:
+      namespace: argocd
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: apps/platform-apps
+      repoURL: http://gitea.dclab.local/gitadmin/platform.git
+      targetRevision: main
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - CreateNamespace=true
+  status:
+    controllerNamespace: argocd
+    health:
+      status: Healthy
+    history:
+    - deployStartedAt: "2026-05-03T19:18:07Z"
+      deployedAt: "2026-05-03T19:18:08Z"
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: d68d0d18fa8ba89822a21d4a484b6028677290d3
+      source:
+        path: apps/platform-apps
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    - deployStartedAt: "2026-05-03T19:47:38Z"
+      deployedAt: "2026-05-03T19:47:39Z"
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: 228131d10b74f8fc54ec4fedbaadf4d3c0a34a66
+      source:
+        path: apps/platform-apps
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    operationState:
+      finishedAt: "2026-05-03T19:47:39Z"
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          automated: true
+        retry:
+          limit: 5
+        sync:
+          prune: true
+          revision: 228131d10b74f8fc54ec4fedbaadf4d3c0a34a66
+          syncOptions:
+          - CreateNamespace=true
+      phase: Succeeded
+      startedAt: "2026-05-03T19:47:38Z"
+      syncResult:
+        resources:
+        - group: argoproj.io
+          hookPhase: Running
+          kind: Application
+          message: application.argoproj.io/gitops-smoke unchanged
+          name: gitops-smoke
+          namespace: argocd
+          status: Synced
+          syncPhase: Sync
+          version: v1alpha1
+        - group: argoproj.io
+          hookPhase: Running
+          kind: Application
+          message: application.argoproj.io/sample-app created
+          name: sample-app
+          namespace: argocd
+          status: Synced
+          syncPhase: Sync
+          version: v1alpha1
+        - group: argoproj.io
+          hookPhase: Running
+          kind: Application
+          message: application.argoproj.io/gitea-runner created
+          name: gitea-runner
+          namespace: argocd
+          status: Synced
+          syncPhase: Sync
+          version: v1alpha1
+        revision: 228131d10b74f8fc54ec4fedbaadf4d3c0a34a66
+        source:
+          path: apps/platform-apps
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+    reconciledAt: "2026-05-04T05:47:57Z"
+    resources:
+    - group: argoproj.io
+      kind: Application
+      name: gitea-runner
+      namespace: argocd
+      status: Synced
+      version: v1alpha1
+    - group: argoproj.io
+      kind: Application
+      name: gitops-smoke
+      namespace: argocd
+      status: Synced
+      version: v1alpha1
+    - group: argoproj.io
+      kind: Application
+      name: sample-app
+      namespace: argocd
+      status: Synced
+      version: v1alpha1
+    sourceType: Directory
+    summary: {}
+    sync:
+      comparedTo:
+        destination:
+          namespace: argocd
+          server: https://kubernetes.default.svc
+        source:
+          path: apps/platform-apps
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      status: Synced
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"root-app"},"name":"gitops-smoke","namespace":"argocd"},"spec":{"destination":{"namespace":"gitops-smoke","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"apps/workloads/gitops-smoke","repoURL":"http://gitea.dclab.local/gitadmin/platform.git","targetRevision":"main"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true},"syncOptions":["CreateNamespace=true"]}}}
+    creationTimestamp: "2026-05-03T19:18:08Z"
+    generation: 226
+    labels:
+      argocd.argoproj.io/instance: root-app
+    name: gitops-smoke
+    namespace: argocd
+    resourceVersion: "540279"
+    uid: b73d8768-5acd-497f-98df-ad04243f145a
+  spec:
+    destination:
+      namespace: gitops-smoke
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: apps/workloads/gitops-smoke
+      repoURL: http://gitea.dclab.local/gitadmin/platform.git
+      targetRevision: main
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - CreateNamespace=true
+  status:
+    controllerNamespace: argocd
+    health:
+      status: Healthy
+    history:
+    - deployStartedAt: "2026-05-03T19:18:08Z"
+      deployedAt: "2026-05-03T19:18:11Z"
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: d68d0d18fa8ba89822a21d4a484b6028677290d3
+      source:
+        path: apps/workloads/gitops-smoke
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    - deployStartedAt: "2026-05-03T19:18:44Z"
+      deployedAt: "2026-05-03T19:18:44Z"
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: e882d04054ffd49dc1923d03ecff7374b3952798
+      source:
+        path: apps/workloads/gitops-smoke
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    operationState:
+      finishedAt: "2026-05-03T19:18:44Z"
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          automated: true
+        retry:
+          limit: 5
+        sync:
+          prune: true
+          revision: e882d04054ffd49dc1923d03ecff7374b3952798
+          syncOptions:
+          - CreateNamespace=true
+      phase: Succeeded
+      startedAt: "2026-05-03T19:18:44Z"
+      syncResult:
+        resources:
+        - group: ""
+          hookPhase: Running
+          kind: Service
+          message: service/gitops-smoke unchanged
+          name: gitops-smoke
+          namespace: gitops-smoke
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: apps
+          hookPhase: Running
+          kind: Deployment
+          message: deployment.apps/gitops-smoke configured
+          name: gitops-smoke
+          namespace: gitops-smoke
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        revision: e882d04054ffd49dc1923d03ecff7374b3952798
+        source:
+          path: apps/workloads/gitops-smoke
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+    reconciledAt: "2026-05-04T05:47:57Z"
+    resources:
+    - health:
+        status: Healthy
+      kind: Service
+      name: gitops-smoke
+      namespace: gitops-smoke
+      status: Synced
+      version: v1
+    - group: apps
+      health:
+        status: Healthy
+      kind: Deployment
+      name: gitops-smoke
+      namespace: gitops-smoke
+      status: Synced
+      version: v1
+    sourceType: Directory
+    summary:
+      images:
+      - harbor-01.dclab.local/platform/nginx:tls-test
+    sync:
+      comparedTo:
+        destination:
+          namespace: gitops-smoke
+          server: https://kubernetes.default.svc
+        source:
+          path: apps/workloads/gitops-smoke
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      status: Synced
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"root-app"},"name":"gitea-runner","namespace":"argocd"},"spec":{"destination":{"namespace":"gitea-runner","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"apps/workloads/gitea-runner","repoURL":"http://gitea.dclab.local/gitadmin/platform.git","targetRevision":"main"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true},"syncOptions":["CreateNamespace=true"]}}}
+    creationTimestamp: "2026-05-03T19:47:39Z"
+    generation: 218
+    labels:
+      argocd.argoproj.io/instance: root-app
+    name: gitea-runner
+    namespace: argocd
+    resourceVersion: "540280"
+    uid: 9d9b2e1d-be5b-4048-ae9b-1e27d19fc63d
+  spec:
+    destination:
+      namespace: gitea-runner
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: apps/workloads/gitea-runner
+      repoURL: http://gitea.dclab.local/gitadmin/platform.git
+      targetRevision: main
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - CreateNamespace=true
+  status:
+    controllerNamespace: argocd
+    health:
+      status: Healthy
+    history:
+    - deployStartedAt: "2026-05-03T19:47:39Z"
+      deployedAt: "2026-05-03T19:47:40Z"
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: 228131d10b74f8fc54ec4fedbaadf4d3c0a34a66
+      source:
+        path: apps/workloads/gitea-runner
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    - deployStartedAt: "2026-05-03T19:54:30Z"
+      deployedAt: "2026-05-03T19:54:30Z"
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: a3cd51154f764711916eb61e45ab794c5fea81db
+      source:
+        path: apps/workloads/gitea-runner
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    operationState:
+      finishedAt: "2026-05-03T19:54:30Z"
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          automated: true
+        retry:
+          limit: 5
+        sync:
+          prune: true
+          revision: a3cd51154f764711916eb61e45ab794c5fea81db
+          syncOptions:
+          - CreateNamespace=true
+      phase: Succeeded
+      startedAt: "2026-05-03T19:54:30Z"
+      syncResult:
+        resources:
+        - group: ""
+          hookPhase: Running
+          kind: ConfigMap
+          message: configmap/runner-config unchanged
+          name: runner-config
+          namespace: gitea-runner
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: apps
+          hookPhase: Running
+          kind: StatefulSet
+          message: statefulset.apps/gitea-runner configured
+          name: gitea-runner
+          namespace: gitea-runner
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        revision: a3cd51154f764711916eb61e45ab794c5fea81db
+        source:
+          path: apps/workloads/gitea-runner
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+    reconciledAt: "2026-05-04T05:47:57Z"
+    resources:
+    - kind: ConfigMap
+      name: runner-config
+      namespace: gitea-runner
+      status: Synced
+      version: v1
+    - group: apps
+      health:
+        message: 'partitioned roll out complete: 1 new pods have been updated...'
+        status: Healthy
+      kind: StatefulSet
+      name: gitea-runner
+      namespace: gitea-runner
+      status: Synced
+      version: v1
+    sourceType: Directory
+    summary:
+      images:
+      - harbor-01.dclab.local/runner/act_runner:0.2.11
+      - harbor-01.dclab.local/runner/docker:26.1-dind
+    sync:
+      comparedTo:
+        destination:
+          namespace: gitea-runner
+          server: https://kubernetes.default.svc
+        source:
+          path: apps/workloads/gitea-runner
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      status: Synced
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"labels":{"argocd.argoproj.io/instance":"root-app"},"name":"sample-app","namespace":"argocd"},"spec":{"destination":{"namespace":"sample-app","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"apps/workloads/sample-app","repoURL":"http://gitea.dclab.local/gitadmin/platform.git","targetRevision":"main"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true},"syncOptions":["CreateNamespace=true"]}}}
+    creationTimestamp: "2026-05-03T19:47:39Z"
+    generation: 225
+    labels:
+      argocd.argoproj.io/instance: root-app
+    name: sample-app
+    namespace: argocd
+    resourceVersion: "540278"
+    uid: 03085b45-b6c4-4289-b9d9-b70f6f569136
+  spec:
+    destination:
+      namespace: sample-app
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: apps/workloads/sample-app
+      repoURL: http://gitea.dclab.local/gitadmin/platform.git
+      targetRevision: main
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+      - CreateNamespace=true
+  status:
+    controllerNamespace: argocd
+    health:
+      status: Healthy
+    history:
+    - deployStartedAt: "2026-05-03T19:47:39Z"
+      deployedAt: "2026-05-03T19:47:42Z"
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: 228131d10b74f8fc54ec4fedbaadf4d3c0a34a66
+      source:
+        path: apps/workloads/sample-app
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    - deployStartedAt: "2026-05-04T04:28:55Z"
+      deployedAt: "2026-05-04T04:28:55Z"
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      source:
+        path: apps/workloads/sample-app
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    - deployStartedAt: "2026-05-04T04:29:08Z"
+      deployedAt: "2026-05-04T04:29:09Z"
+      id: 2
+      initiatedBy:
+        username: admin
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      source:
+        path: apps/workloads/sample-app
+        repoURL: http://gitea.dclab.local/gitadmin/platform.git
+        targetRevision: main
+    operationState:
+      finishedAt: "2026-05-04T04:29:09Z"
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          username: admin
+        retry: {}
+        sync:
+          revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+          syncOptions:
+          - CreateNamespace=true
+          syncStrategy:
+            hook: {}
+      phase: Succeeded
+      startedAt: "2026-05-04T04:29:08Z"
+      syncResult:
+        resources:
+        - group: ""
+          hookPhase: Running
+          kind: Service
+          message: service/sample-app unchanged
+          name: sample-app
+          namespace: sample-app
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: apps
+          hookPhase: Running
+          kind: Deployment
+          message: deployment.apps/sample-app unchanged
+          name: sample-app
+          namespace: sample-app
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+        source:
+          path: apps/workloads/sample-app
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+    reconciledAt: "2026-05-04T05:47:57Z"
+    resources:
+    - health:
+        status: Healthy
+      kind: Service
+      name: sample-app
+      namespace: sample-app
+      status: Synced
+      version: v1
+    - group: apps
+      health:
+        status: Healthy
+      kind: Deployment
+      name: sample-app
+      namespace: sample-app
+      status: Synced
+      version: v1
+    sourceType: Directory
+    summary:
+      images:
+      - harbor-01.dclab.local/platform/sample-app:0ced6b7
+    sync:
+      comparedTo:
+        destination:
+          namespace: sample-app
+          server: https://kubernetes.default.svc
+        source:
+          path: apps/workloads/sample-app
+          repoURL: http://gitea.dclab.local/gitadmin/platform.git
+          targetRevision: main
+      revision: 1745084e5cb814d423498ce07e08a645269f3e4d
+      status: Synced
+kind: List
+metadata:
+  resourceVersion: ""

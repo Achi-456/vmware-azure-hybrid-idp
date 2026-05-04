@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"sample-app","argocd.argoproj.io/instance":"sample-app"},"name":"sample-app","namespace":"sample-app"},"spec":{"ports":[{"name":"http","port":80,"targetPort":8080}],"selector":{"app":"sample-app"}}}
+  creationTimestamp: "2026-05-03T19:47:42Z"
+  labels:
+    app: sample-app
+    argocd.argoproj.io/instance: sample-app
+  name: sample-app
+  namespace: sample-app
+  resourceVersion: "353853"
+  uid: 98586395-ff47-40b0-88b1-4280862e1ac0
+spec:
+  clusterIP: 10.43.47.140
+  clusterIPs:
+  - 10.43.47.140
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: sample-app
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

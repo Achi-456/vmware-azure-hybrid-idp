@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitea-runner
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: http://gitea.dclab.local/gitadmin/platform.git
+    targetRevision: main
+    path: apps/workloads/gitea-runner
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitea-runner
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,2 @@
+NAME                          READY   STATUS    RESTARTS   AGE   IP           NODE             NOMINATED NODE   READINESS GATES
+sample-app-5485865574-vwzgb   1/1     Running   0          79m   10.42.2.30   rke2-worker-01   <none>           <none>

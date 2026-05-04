@@ -1,0 +1,47 @@
+name: Build sample app
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/sample-app/**'
+      - '.gitea/workflows/build-sample-app.yaml'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_TLS_CERTDIR: ""
+      DOCKER_BUILDKIT: "0"
+    steps:
+      - name: Clone platform repo
+        run: |
+          set -e
+          PUSH_USER='${{ secrets.PUSH_USERNAME }}'
+          PUSH_PASS='${{ secrets.PUSH_PASSWORD }}'
+          AUTH=$(printf '%s:%s' "$PUSH_USER" "$PUSH_PASS" | base64 -w0)
+          rm -rf /tmp/platform
+          git -c http.extraHeader="Authorization: Basic ${AUTH}" clone http://gitea.dclab.local/gitadmin/platform.git /tmp/platform
+      - name: Build and push sample app
+        run: |
+          set -e
+          cd /tmp/platform
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          IMAGE="harbor-01.dclab.local/platform/sample-app:${SHORT_SHA}"
+          HARBOR_USER='${{ secrets.HARBOR_USERNAME }}'
+          HARBOR_PASS='${{ secrets.HARBOR_PASSWORD }}'
+          printf '%s' "$HARBOR_PASS" | docker login harbor-01.dclab.local -u "$HARBOR_USER" --password-stdin
+          docker build -t "${IMAGE}" -t harbor-01.dclab.local/platform/sample-app:latest apps/sample-app/
+          docker push "${IMAGE}"
+          docker push harbor-01.dclab.local/platform/sample-app:latest
+          sed -i "s|harbor-01.dclab.local/platform/sample-app:.*|${IMAGE}|" apps/workloads/sample-app/deployment.yaml
+          git config user.email "ci@dclab.local"
+          git config user.name "Gitea CI"
+          git add apps/workloads/sample-app/deployment.yaml
+          git commit -m "ci: update sample-app image to ${SHORT_SHA}" || exit 0
+          PUSH_USER='${{ secrets.PUSH_USERNAME }}'
+          PUSH_PASS='${{ secrets.PUSH_PASSWORD }}'
+          AUTH=$(printf '%s:%s' "$PUSH_USER" "$PUSH_PASS" | base64 -w0)
+          git -c http.extraHeader="Authorization: Basic ${AUTH}" push origin main
