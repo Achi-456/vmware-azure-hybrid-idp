@@ -165,3 +165,71 @@ Retrieve when needed:
 ```powershell
 ssh -i $env:USERPROFILE\.ssh\hybrid-cloud-idp root@172.25.188.93 "cat /root/.harbor-admin-password"
 ```
+
+## Gitea Runner Pod Fails With Read-Only `/run`
+
+Symptom:
+
+```text
+RunContainerError
+read-only file system
+```
+
+Cause: Kubernetes tried to mount the default service account token under `/var/run/secrets`, but the runner image has a read-only `/run`.
+
+Fix in the runner StatefulSet:
+
+```yaml
+spec:
+  template:
+    spec:
+      automountServiceAccountToken: false
+```
+
+After Argo CD applies the change, recycle the failed pod:
+
+```bash
+kubectl -n gitea-runner delete pod gitea-runner-0
+```
+
+## Harbor Robot Username Breaks Docker Login
+
+Symptom:
+
+```text
+docker login harbor-01.dclab.local
+unauthorized
+```
+
+Cause: Harbor robot usernames contain `$`, and shell expansion can alter the username when a workflow uses double quotes.
+
+Fix in Gitea workflow:
+
+```bash
+HARBOR_USER='${{ secrets.HARBOR_USERNAME }}'
+HARBOR_PASS='${{ secrets.HARBOR_PASSWORD }}'
+printf '%s' "$HARBOR_PASS" | docker login harbor-01.dclab.local \
+  -u "$HARBOR_USER" --password-stdin
+```
+
+## Docker BuildKit Fails Harbor Private CA Validation
+
+Symptom:
+
+```text
+failed to fetch oauth token
+x509: certificate signed by unknown authority
+```
+
+Context: regular `docker pull` from the DinD daemon works, but `docker build` using BuildKit fails while resolving Harbor base image metadata.
+
+Fix for the lab workflow:
+
+```yaml
+env:
+  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: "0"
+```
+
+Future hardening should restore BuildKit with explicit CA trust or move to a rootless builder.

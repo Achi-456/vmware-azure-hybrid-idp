@@ -1,8 +1,8 @@
 # VMware Azure Hybrid Internal Developer Platform
 
-Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Gitea, Argo CD, Crossplane, and Azure provider foundations.
+Production-style hybrid cloud platform lab using VMware vSphere, RKE2, Harbor, Longhorn, MetalLB, NGINX Ingress, Gitea, Argo CD, Gitea Actions, Crossplane, and Azure provider foundations.
 
-**GitHub description:** Hybrid internal developer platform lab on VMware vSphere with RKE2, Harbor, Longhorn, MetalLB ingress, Gitea, Argo CD GitOps, Crossplane, and Azure provider integration.
+**GitHub description:** Hybrid internal developer platform lab on VMware vSphere with RKE2, Harbor, Longhorn, MetalLB ingress, Gitea, Argo CD GitOps, Gitea Actions CI, Crossplane, and Azure provider integration.
 
 ## Core Idea
 
@@ -35,12 +35,16 @@ flowchart TB
     Longhorn[Longhorn<br/>Default StorageClass]
     Gitea[Gitea<br/>Internal Git]
     ArgoCD[Argo CD<br/>GitOps Control Plane]
+    Runner[Gitea Actions Runner<br/>On-prem CI]
     Crossplane[Crossplane<br/>Azure Providers Installed]
-    Demo[Demo Workloads]
+    Demo[GitOps Smoke + Sample App]
   end
 
   Harbor -->|HTTPS image pulls| K8s
   Gitea -->|platform repo| ArgoCD
+  Gitea -->|workflow events| Runner
+  Runner -->|builds and pushes images| Harbor
+  Runner -->|commits image tag| Gitea
   ArgoCD -->|syncs from Git| Demo
   Longhorn -->|Persistent Volumes| Demo
   MetalLB --> Ingress
@@ -61,6 +65,7 @@ flowchart TB
 | RKE2 NGINX Ingress | HTTP/HTTPS routing | Existing bundled controller exposed via MetalLB |
 | Gitea | Internal Git server | `gitadmin/platform` platform monorepo |
 | Argo CD | GitOps controller | App-of-Apps with `root-app` and `gitops-smoke` |
+| Gitea Actions | On-prem CI runner | Builds sample app, pushes to Harbor, commits tag to Git |
 | Crossplane | Cloud control plane | Core + Azure providers healthy; Azure auth paused |
 | utility-01 | Admin workstation | `kubectl`, `helm`, Azure CLI, SSH access |
 
@@ -81,6 +86,10 @@ Completed:
 - Argo CD deployed on `argocd.dclab.local`
 - App-of-Apps bootstrap from the internal Gitea platform repo
 - GitOps smoke workload synced and updated from Git
+- Gitea Actions runner deployed and registered
+- CI smoke workflow passing
+- Sample app build workflow pushing to Harbor and updating Git
+- Argo CD syncing `sample-app` from the CI-updated manifest
 - Runbooks for build commands and troubleshooting
 
 Paused:
@@ -90,7 +99,7 @@ Paused:
 Next:
 
 - Bring existing platform services under GitOps one at a time
-- Gitea Actions runner for on-prem CI
+- Harden Gitea Actions runner build path
 - Backstage developer portal
 
 ## Access Points
@@ -101,6 +110,7 @@ Next:
 | Longhorn | `http://localhost:30080` | Use SSH tunnel from workstation |
 | Gitea | `http://gitea.dclab.local` | Internal Git server |
 | Argo CD | `http://argocd.dclab.local` | GitOps control plane |
+| Sample App | Cluster service `sample-app.sample-app.svc` | Built by Gitea Actions and synced by Argo CD |
 | Future Grafana | `http://grafana.dclab.local` | DNS already points to ingress VIP |
 | Future Backstage | `http://backstage.dclab.local` | DNS already points to ingress VIP |
 
@@ -120,6 +130,8 @@ kubectl -n longhorn-system get pods
 kubectl get storageclass
 kubectl -n gitea get pods,pvc,ingress
 kubectl -n argocd get applications
+kubectl -n gitea-runner get pods
+kubectl -n sample-app get pods
 kubectl get providers
 ```
 
@@ -132,6 +144,8 @@ Expected state:
 - `longhorn` is default storage class
 - Gitea pods `Running`
 - Argo CD apps `Synced` and `Healthy`
+- Gitea runner pod `Running`
+- Sample app pod `Running`
 - Crossplane Azure providers `HEALTHY=True`
 
 ## Repository Structure

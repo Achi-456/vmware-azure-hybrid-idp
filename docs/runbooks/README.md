@@ -15,4 +15,5 @@ Secrets are intentionally excluded. When a command needs a credential, read it f
 - `06-metallb-ingress.md` - MetalLB L2 VIP and RKE2 ingress LoadBalancer exposure.
 - `07-gitea.md` - Gitea deployment on RKE2 with Longhorn, Harbor images, and ingress routing.
 - `08-argocd.md` - Argo CD install, Gitea repo connection, and App-of-Apps bootstrap.
+- `09-gitea-actions-runner.md` - Gitea Actions runner, Harbor image builds, and the on-prem CI loop.
 - `99-troubleshooting.md` - Issues encountered and exact recovery steps.

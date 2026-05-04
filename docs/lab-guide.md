@@ -237,6 +237,8 @@ Current Argo CD apps:
 ```text
 root-app      Synced Healthy
 gitops-smoke  Synced Healthy
+gitea-runner  Synced Healthy
+sample-app    Synced Healthy
 ```
 
 Validation:
@@ -254,6 +256,80 @@ Notes:
 - `gitops-smoke` uses `harbor-01.dclab.local/platform/nginx:tls-test`.
 - The first GitOps sync test added label `platform.dclab.local/gitops-test=phase-3c` from Git and Argo CD applied it automatically.
 - Longhorn and Gitea are not yet retroactively managed by Argo CD; that adoption is deferred until their exact manifests or Helm values are committed.
+
+## Phase 3D On-Prem CI: Gitea Actions Runner
+
+Gitea Actions is enabled and a runner is deployed inside RKE2.
+
+Endpoint:
+
+- Actions UI: `http://gitea.dclab.local/gitadmin/platform/actions`
+- Runner namespace: `gitea-runner`
+- Runner workload: `StatefulSet/gitea-runner`
+
+Images:
+
+- `harbor-01.dclab.local/runner/act_runner:0.2.11`
+- `harbor-01.dclab.local/runner/docker:26.1-dind`
+- `harbor-01.dclab.local/runner/docker:26.1-cli`
+- `harbor-01.dclab.local/runner/ubuntu:act-latest`
+
+GitOps paths:
+
+```text
+apps/platform-apps/gitea-runner.yaml
+apps/workloads/gitea-runner/
+```
+
+Workflow files:
+
+```text
+.gitea/workflows/ci-smoke.yaml
+.gitea/workflows/build-sample-app.yaml
+```
+
+Current CI loop:
+
+```text
+Push to Gitea
+  -> Gitea Actions runner starts workflow
+  -> Docker-in-Docker builds sample image
+  -> image is pushed to Harbor project platform
+  -> workflow commits updated image tag to Git
+  -> Argo CD syncs sample-app from Git
+```
+
+Sample app:
+
+- Namespace: `sample-app`
+- Image pattern: `harbor-01.dclab.local/platform/sample-app:<git-sha>`
+- Managed by Argo CD app: `sample-app`
+
+Credential policy:
+
+- Runner token and Harbor robot credentials are stored only on `utility-01` in `/root/gitea-secrets.env`.
+- Kubernetes runner token is stored in secret `gitea-runner/runner-secret`.
+- Gitea repo Actions secrets hold only the values needed by workflows.
+- No secret values are committed to Git.
+
+Implementation notes:
+
+- Runner uses a `StatefulSet` so registration data survives restarts.
+- Runner starts with one replica.
+- DinD is privileged in this lab phase.
+- `automountServiceAccountToken: false` is required because the runner image has a read-only `/run`.
+- `DOCKER_BUILDKIT=0` is set in the sample app workflow due Harbor private CA handling in the BuildKit path.
+
+Validation:
+
+```bash
+kubectl -n gitea-runner get pods
+kubectl -n gitea-runner logs gitea-runner-0 -c runner --tail=100
+argocd --grpc-web app list
+kubectl -n sample-app get pods,svc
+kubectl -n sample-app get deploy sample-app \
+  -o jsonpath='{.spec.template.spec.containers[0].image}'
+```
 
 ## Crossplane Phase 2D Status
 
