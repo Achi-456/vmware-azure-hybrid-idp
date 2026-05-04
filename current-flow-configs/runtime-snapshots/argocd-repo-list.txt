@@ -1,2 +1,2 @@
 TYPE  NAME  REPO                                             INSECURE  OCI    LFS    CREDS  STATUS      MESSAGE  PROJECT
-git         https://gitea.dclab.local/gitadmin/platform.git  true      false  false  true   Successful           
+git         https://gitea.dclab.local/gitadmin/platform.git  true      false  false  true   Successful
